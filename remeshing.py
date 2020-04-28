@@ -1,292 +1,239 @@
+# ==========================================
+# Code created by Leandro Marques at 04/2020
+# Gesar Search Group
+# State University of the Rio de Janeiro
+# e-mail: marquesleandro67@gmail.com
+# ==========================================
+
+# This code is used to remesh
+
+
 import numpy as np
-
-# ----------------- IMPORT MSH -----------------------------------
-IEN = np.zeros([18,3], dtype = int)
-IEN[0]  = [ 0  , 7  , 9  ]
-IEN[1]  = [ 7  , 8  , 9  ]
-IEN[2]  = [ 9  , 1  , 0  ]
-IEN[3]  = [ 9  , 8  , 11 ]
-IEN[4]  = [ 9  , 12 , 1  ]
-IEN[5]  = [ 12 , 2  , 1  ]
-IEN[6]  = [ 2  , 12 , 3  ]
-IEN[7]  = [ 3  , 12 , 11 ]
-IEN[8]  = [ 12 , 9  , 11 ]
-IEN[9]  = [ 3  , 11 , 4  ]
-IEN[10] = [ 4  , 11 , 13 ]
-IEN[11] = [ 13 , 11 , 10 ]
-IEN[12] = [ 10 , 14 , 13 ]
-IEN[13] = [ 13 , 5  , 4  ]
-IEN[14] = [ 5  , 13 , 14 ]
-IEN[15] = [ 5  , 14 , 6  ]
-print 'IEN'
-print IEN
-
-x = np.zeros([16,1], dtype = float)
-y = np.zeros([16,1], dtype = float)
-
-x[0]  = 0.0
-x[1]  = 0.5
-x[2]  = 1.0
-x[3]  = 1.0
-x[4]  = 1.0
-x[5]  = 1.0
-x[6]  = 1.0
-x[7]  = 0.0
-x[8]  = 0.0
-x[9]  = 0.4
-x[10] = 0.2
-x[11] = 0.5
-x[12] = 0.6
-x[13] = 0.8
-x[14] = 0.7
-print ""
-print 'x'
-print x
-
-
-y[0]  = 2.0
-y[1]  = 2.0
-y[2]  = 2.0
-y[3]  = 1.5
-y[4]  = 1.0
-y[5]  = 0.5
-y[6]  = 0.0
-y[7]  = 1.6
-y[8]  = 0.8
-y[9]  = 1.6
-y[10] = 0.75
-y[11] = 1.25
-y[12] = 1.6
-y[13] = 0.75
-y[14] = 0.25
-print ""
-print 'y'
-print y
-
-
-
-numNodes = len(x)
-numElements = len(IEN)
-print ""
-print 'numNodes'
-print numNodes
-print ""
-print 'numElements'
-print numElements
-
-
-boundaryNodes = []
-boundaryNodes = [0,1,2,3,4,5,6]
-print ""
-print 'boundaryNodes'
-print boundaryNodes
-
-
-neighborsNodes = {}
-neighborsElements = {}
-for i in range(0,numNodes):
- neighborsNodes[i] = []
- neighborsElements[i] = []
-
-
-neighborsNodes[0]  = [ 1  , 7  , 9  ]
-neighborsNodes[1]  = [ 0  , 2  , 9  , 12 ]
-neighborsNodes[2]  = [ 1  , 3  , 12 ]
-neighborsNodes[3]  = [ 2  , 4  , 11 , 12 ]
-neighborsNodes[4]  = [ 3  , 5  , 11 , 13 ]
-neighborsNodes[5]  = [ 4  , 6  , 13 , 14 ]
-neighborsNodes[6]  = [ 5  , 14 ]
-neighborsNodes[7]  = [ 0  , 8  , 9  ]
-neighborsNodes[8]  = [ 7  , 9  , 11 ]
-neighborsNodes[9]  = [ 0  , 1  , 7  , 8  , 11 , 12 ]
-neighborsNodes[10] = [ 11 , 13 , 14 ]
-neighborsNodes[11] = [ 3  , 4  , 8  , 9  , 10 , 12 , 13 ]
-neighborsNodes[12] = [ 1  , 2  , 3  , 9  , 11 ]
-neighborsNodes[13] = [ 4  , 5  , 10 , 11 , 14 ]
-neighborsNodes[14] = [ 5  , 6  , 10 ]
-
-neighborsElements[0]  = [ 0  , 2  ]
-neighborsElements[1]  = [ 2  , 4  , 5  ]
-neighborsElements[2]  = [ 5  , 6  ]
-neighborsElements[3]  = [ 6  , 7  , 9  ]
-neighborsElements[4]  = [ 9  , 10 , 13 ]
-neighborsElements[5]  = [ 13 , 14 , 15 ]
-neighborsElements[6]  = [ 15 ]
-neighborsElements[7]  = [ 0  , 1  ]
-neighborsElements[8]  = [ 1  , 3  ]
-neighborsElements[9]  = [ 0  , 1  , 2  , 3  , 4  , 8 ]
-neighborsElements[10] = [ 11 , 12 ]
-neighborsElements[11] = [ 3  , 7  , 8  , 9  , 10 , 11 ]
-neighborsElements[12] = [ 4  , 5  , 6  , 7  , 8  ]
-neighborsElements[13] = [ 10 , 11 , 12 , 13 , 14 ]
-neighborsElements[14] = [ 12 , 14 , 15 ]
-# -----------------------------------------------------------------------
-
-
 
 
 # ----------------------- REMESHING - DELETE NODES ----------------------
-# numNodes x neighNodes Loop / min Edges List
-minEdges = []
+def deleteNodes(_numNodes, _numElements, _x, _y, _IEN, _neighborsNodes, _boundaryNodes, _limitLength): 
 
-minLength = 0.391
-for i in range(0,numNodes):
- xNode = x[i]
- yNode = y[i]
-
- for j in neighborsNodes[i]:
-  xNeighNode = x[j]
-  yNeighNode = y[j]
-
-  xLength = xNode - xNeighNode
-  yLength = yNode - yNeighNode
-  length = float(np.sqrt(xLength**2 + yLength**2))
-
-  if length <= minLength:
-   minEdges.append([i,j,length])
-
-minEdges = sorted(minEdges, key = lambda k:k[2]) #sort by min length
-
-print ""
-print 'minEdges'
-print minEdges
-
-
-
-# assembly delete Edges List for duplicates min Nodes
-minNodes = []
-delEdges = []
-for i in range(0,len(minEdges)):
- for j in range(0,len(minEdges[i])-1):
-  node = minEdges[i][j]
-  if node in minNodes:
-   delEdges.append(i)
-   break
-  else:
-   minNodes.append(node)
-delEdges = list(set(delEdges))
-print ""
-print 'delEdges'
-print delEdges
-
-
-# delete delEdges in minEdges List
-for i in reversed(delEdges):
- del minEdges[i]
-print ""
-print 'minEdges'
-print minEdges
-
-
-# assembly delete Nodes List
-delNodes = []
-for i in range(0,len(minEdges)):
-
-  # delNode is boundaryNode
-  if minEdges[i][0] in boundaryNodes:
-   delNodes.append(minEdges[i][1])
-   node = minEdges[i][0]
-   minEdges[i][0] = minEdges[i][1]
-   minEdges[i][1] = node
+ # numNodes x neighNodes Loop / min Edges List
+ minEdges = []
+ for i in range(0,_numNodes):
+  xNode = _x[i]
+  yNode = _y[i]
  
-  # delNode is within mesh
-  else:
-   delNodes.append(minEdges[i][0])
-   
-   xNode1 = x[minEdges[i][0]]
-   yNode1 = y[minEdges[i][0]]
-   xNode2 = x[minEdges[i][1]]
-   yNode2 = y[minEdges[i][1]]
+  for j in _neighborsNodes[i]:
+   xNeighNode = _x[j]
+   yNeighNode = _y[j]
+ 
+   xLength = xNode - xNeighNode
+   yLength = yNode - yNeighNode
+   length = float(np.sqrt(xLength**2 + yLength**2))
+ 
+   if length <= _limitLength:
+    minEdges.append([i,j,length])
+ 
+ minEdges = sorted(minEdges, key = lambda k:k[2]) #sort by min length
+ 
+ print ""
+ print 'minEdges'
+ print minEdges
+ 
+ 
+ 
+ # assembly delete Edges List for duplicates min Nodes
+ minNodes = []
+ delEdges = []
+ for i in range(0,len(minEdges)):
+  for j in range(0,len(minEdges[i])-1):
+   node = minEdges[i][j]
+   if node in minNodes:
+    delEdges.append(i)
+    break
+   else:
+    minNodes.append(node)
+ delEdges = list(set(delEdges))
+ print ""
+ print 'delEdges'
+ print delEdges
+ 
+ 
+ # delete delEdges in minEdges List
+ for i in reversed(delEdges):
+  del minEdges[i]
+ print ""
+ print 'minEdges'
+ print minEdges
+ 
+ 
+ # assembly delete Nodes List
+ delNodes = []
+ for i in range(0,len(minEdges)):
+ 
+   # delNode is boundaryNode
+   if minEdges[i][0] in _boundaryNodes:
+    delNodes.append(minEdges[i][1])
+    node = minEdges[i][0]
+    minEdges[i][0] = minEdges[i][1]
+    minEdges[i][1] = node
   
-   xAVG = (xNode1 + xNode2)/2.0
-   yAVG = (yNode1 + yNode2)/2.0
+   # delNode is within mesh
+   else:
+    delNodes.append(minEdges[i][0])
+    
+    xNode1 = _x[minEdges[i][0]]
+    yNode1 = _y[minEdges[i][0]]
+    xNode2 = _x[minEdges[i][1]]
+    yNode2 = _y[minEdges[i][1]]
+   
+    xAVG = (xNode1 + xNode2)/2.0
+    yAVG = (yNode1 + yNode2)/2.0
+ 
+    _x[minEdges[i][1]] = xAVG
+    _y[minEdges[i][1]] = yAVG
+ 
+ 
+ delNodes.sort()
+ print ""
+ print 'delNodes'
+ print delNodes
+ 
+ 
+ 
+ 
+ # assembly delete Elements List and rename delete Node -> near Node
+ deleteElements = []
+ for i in range(0,len(minEdges)):
+  edgesElements = list(set(np.where(_IEN==minEdges[i][0])[0]) & set(np.where(_IEN==minEdges[i][1])[0]))
+ 
+  # rename delete Node -> near Node
+  _IEN = np.where(_IEN==minEdges[i][0],minEdges[i][1],_IEN)
+ 
+  for j in range(0,len(edgesElements)):
+   deleteElements.append(edgesElements[j])
+ deleteElements.sort()
+ print ""
+ print 'delete IEN Elements'
+ print deleteElements
+ print ""
+ print 'rename delete Node -> near Node'
+ print _IEN
+ 
+ 
+ 
+ 
+ # delete IEN Elements
+ for e in reversed(deleteElements):
+  _IEN = np.delete(_IEN,e,0)
+ print ""
+ print 'delete IEN Elements'
+ print _IEN
+ 
+ 
+ 
+ # rename all Nodes and delete Coord Nodes using reversed loop
+ for i in reversed(range(len(delNodes))):
+  _IEN = np.where(_IEN>delNodes[i],_IEN-1,_IEN)
+  _x = np.delete(_x,delNodes[i],0)
+  _y = np.delete(_y,delNodes[i],0)
+ print ""
+ print 'rename all Nodes'
+ print _IEN
+ 
+ 
+ 
+ # delete boundary nodes elements only
+ for e in reversed(range(len(_IEN))):
+  v1 = _IEN[e][0]
+  v2 = _IEN[e][1]
+  v3 = _IEN[e][2]
+ 
+  x1 = float(_x[v1])
+  x2 = float(_x[v2])
+  x3 = float(_x[v3])
+ 
+  y1 = float(_y[v1])
+  y2 = float(_y[v2])
+  y3 = float(_y[v3])
+ 
+  A = 0.5*np.linalg.det(np.array([[1, x1, y1],
+                                  [1, x2, y2],
+                                  [1, x3, y3]]))
+ 
+  if A == 0.0:
+   _IEN = np.delete(_IEN,e,0)
+ 
+ 
+ print ""
+ print 'IEN Final'
+ print _IEN
+ 
+ print ""
+ print 'x Final'
+ print _x
+ 
+ print ""
+ print 'y Final'
+ print _y
 
-   x[minEdges[i][1]] = xAVG
-   y[minEdges[i][1]] = yAVG
+
+ _numNodes = len(_x)
+ _numElements = len(_IEN)
+
+ neighborsNodes = {}
+ neighborsNodesALE = {}
+ neighborsElements = {}
+ npts = []
+ for i in range(0, _numNodes):  
+  neighborsNodes[i] = []
+  neighborsNodesALE[i] = []
+  neighborsElements[i] = []
+  npts.append(i)
 
 
-delNodes.sort()
-print ""
-print 'delNodes'
-print delNodes
+ length = []
+ for e in range(0, _numElements):
+  v1 = _IEN[e][0]
+  v2 = _IEN[e][1]
+  v3 = _IEN[e][2]
+ 
+  neighborsNodes[v1].extend(_IEN[e])  
+  neighborsNodes[v2].extend(_IEN[e])  
+  neighborsNodes[v3].extend(_IEN[e])  
 
+  neighborsNodes[v1] = list(set(neighborsNodes[v1]))
+  neighborsNodes[v2] = list(set(neighborsNodes[v2]))
+  neighborsNodes[v3] = list(set(neighborsNodes[v3]))
 
+  neighborsNodesALE[v1].extend(_IEN[e])  
+  neighborsNodesALE[v2].extend(_IEN[e])  
+  neighborsNodesALE[v3].extend(_IEN[e])  
+    
+  neighborsNodesALE[v1] = list(set(neighborsNodesALE[v1]))
+  neighborsNodesALE[v2] = list(set(neighborsNodesALE[v2]))
+  neighborsNodesALE[v3] = list(set(neighborsNodesALE[v3]))
 
+  neighborsElements[v1].append(e)  
+  neighborsElements[v2].append(e)  
+  neighborsElements[v3].append(e)  
 
-# assembly delete Elements List and rename delete Node -> near Node
-deleteElements = []
-for i in range(0,len(minEdges)):
- edgesElements = list(set(np.where(IEN==minEdges[i][0])[0]) & set(np.where(IEN==minEdges[i][1])[0]))
+  x_a = _x[v1] - _x[v2]
+  x_b = _x[v2] - _x[v3]
+  x_c = _x[v3] - _x[v1]
+  
+  y_a = _y[v1] - _y[v2]
+  y_b = _y[v2] - _y[v3]
+  y_c = _y[v3] - _y[v1]
+  
+  length1 = np.sqrt(x_a**2 + y_a**2)
+  length2 = np.sqrt(x_b**2 + y_b**2)
+  length3 = np.sqrt(x_c**2 + y_c**2)
 
- # rename delete Node -> near Node
- IEN = np.where(IEN==minEdges[i][0],minEdges[i][1],IEN)
+  length.append(length1)
+  length.append(length2)
+  length.append(length3)
+  
+ minLengthMesh = min(length)
 
- for j in range(0,len(edgesElements)):
-  deleteElements.append(edgesElements[j])
-deleteElements.sort()
-print ""
-print 'delete IEN Elements'
-print deleteElements
-print ""
-print 'rename delete Node -> near Node'
-print IEN
-
-
-
-
-# delete IEN Elements
-for e in reversed(deleteElements):
- IEN = np.delete(IEN,e,0)
-print ""
-print 'delete IEN Elements'
-print IEN
-
-
-
-# rename all Nodes and delete Coord Nodes using reversed loop
-for i in reversed(range(len(delNodes))):
- IEN = np.where(IEN>delNodes[i],IEN-1,IEN)
- x = np.delete(x,delNodes[i],0)
- y = np.delete(y,delNodes[i],0)
-print ""
-print 'rename all Nodes'
-print IEN
-
-
-
-# delete boundary nodes elements only
-for e in reversed(range(len(IEN))):
- v1 = IEN[e][0]
- v2 = IEN[e][1]
- v3 = IEN[e][2]
-
- x1 = float(x[v1])
- x2 = float(x[v2])
- x3 = float(x[v3])
-
- y1 = float(y[v1])
- y2 = float(y[v2])
- y3 = float(y[v3])
-
- A = 0.5*np.linalg.det(np.array([[1, x1, y1],
-                                 [1, x2, y2],
-                                 [1, x3, y3]]))
-
- if A == 0.0:
-  IEN = np.delete(IEN,e,0)
-
-
-print ""
-print 'IEN Final'
-print IEN
-
-print ""
-print 'x Final'
-print x
-
-print ""
-print 'y Final'
-print y
+ return _numNodes, _numElements, _x, _y, _IEN, neighborsNodes, neighborsNodesALE, neighborsElements, minLengthMesh
 # -----------------------------------------------------------------------
 
 
